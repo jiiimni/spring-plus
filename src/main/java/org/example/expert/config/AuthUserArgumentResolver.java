@@ -36,11 +36,15 @@ public class AuthUserArgumentResolver implements HandlerMethodArgumentResolver {
     ) {
         HttpServletRequest request = (HttpServletRequest) webRequest.getNativeRequest();
 
-        // JwtFilter 에서 set 한 userId, email, userRole 값을 가져옴
+        // JwtFilter 에서 set 한 userId, email, nickname, userRole 값을 가져옴
         Long userId = (Long) request.getAttribute("userId");
         String email = (String) request.getAttribute("email");
+        String nickname = (String) request.getAttribute("nickname");
         UserRole userRole = UserRole.of((String) request.getAttribute("userRole"));
 
-        return new AuthUser(userId, email, userRole);
+        return new AuthUser(userId, email, nickname, userRole);
+        // 수정: AuthUser 생성 시 nickname도 함께 전달
+        // 개념 정리: ArgumentResolver는 request에 담긴 인증 정보를 AuthUser 객체로 바꿔주는 역할이고,
+        // JWT에 nickname을 넣었다면 여기서도 nickname을 꺼내 AuthUser에 넣어줘야 전체 흐름이 완성됨
     }
 }

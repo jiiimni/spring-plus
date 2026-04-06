@@ -38,11 +38,20 @@ public class AuthService {
         User newUser = new User(
                 signupRequest.getEmail(),
                 encodedPassword,
+                signupRequest.getNickname(),
                 userRole
         );
+        // 수정: 회원 생성 시 nickname도 함께 저장
+
         User savedUser = userRepository.save(newUser);
 
-        String bearerToken = jwtUtil.createToken(savedUser.getId(), savedUser.getEmail(), userRole);
+        String bearerToken = jwtUtil.createToken(
+                savedUser.getId(),
+                savedUser.getEmail(),
+                savedUser.getNickname(),
+                userRole
+        );
+        // 수정: 회원가입 후 발급하는 JWT에도 nickname 포함
 
         return new SignupResponse(bearerToken);
     }
@@ -51,12 +60,19 @@ public class AuthService {
         User user = userRepository.findByEmail(signinRequest.getEmail()).orElseThrow(
                 () -> new InvalidRequestException("가입되지 않은 유저입니다."));
 
-        // 로그인 시 이메일과 비밀번호가 일치하지 않을 경우 401을 반환합니다.
         if (!passwordEncoder.matches(signinRequest.getPassword(), user.getPassword())) {
             throw new AuthException("잘못된 비밀번호입니다.");
         }
 
-        String bearerToken = jwtUtil.createToken(user.getId(), user.getEmail(), user.getUserRole());
+        String bearerToken = jwtUtil.createToken(
+                user.getId(),
+                user.getEmail(),
+                user.getNickname(),
+                user.getUserRole()
+        );
+        // 수정: 로그인 시 발급하는 JWT에도 nickname 포함
+        // 개념 정리: 토큰은 로그인 이후 사용자의 신분증 역할을 하므로,
+        // 프론트에서 닉네임을 바로 쓰려면 로그인 토큰에도 nickname이 들어 있어야 함
 
         return new SigninResponse(bearerToken);
     }

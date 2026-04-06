@@ -40,7 +40,6 @@ public class JwtFilter implements Filter {
         String bearerJwt = httpRequest.getHeader("Authorization");
 
         if (bearerJwt == null) {
-            // 토큰이 없는 경우 400을 반환합니다.
             httpResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "JWT 토큰이 필요합니다.");
             return;
         }
@@ -48,7 +47,6 @@ public class JwtFilter implements Filter {
         String jwt = jwtUtil.substringToken(bearerJwt);
 
         try {
-            // JWT 유효성 검사와 claims 추출
             Claims claims = jwtUtil.extractClaims(jwt);
             if (claims == null) {
                 httpResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "잘못된 JWT 토큰입니다.");
@@ -58,11 +56,14 @@ public class JwtFilter implements Filter {
             UserRole userRole = UserRole.valueOf(claims.get("userRole", String.class));
 
             httpRequest.setAttribute("userId", Long.parseLong(claims.getSubject()));
-            httpRequest.setAttribute("email", claims.get("email"));
-            httpRequest.setAttribute("userRole", claims.get("userRole"));
+            httpRequest.setAttribute("email", claims.get("email", String.class));
+            httpRequest.setAttribute("nickname", claims.get("nickname", String.class));
+            httpRequest.setAttribute("userRole", claims.get("userRole", String.class));
+            // 수정: JWT에서 nickname을 꺼내 request attribute에 저장
+            // 개념 정리: Filter는 토큰을 해석해서 필요한 사용자 정보를 request에 담아두고,
+            // 이후 ArgumentResolver나 컨트롤러가 그 값을 꺼내 쓸 수 있게 이어주는 역할을 함
 
             if (url.startsWith("/admin")) {
-                // 관리자 권한이 없는 경우 403을 반환합니다.
                 if (!UserRole.ADMIN.equals(userRole)) {
                     httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "관리자 권한이 없습니다.");
                     return;
