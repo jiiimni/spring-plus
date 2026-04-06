@@ -8,9 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
-public interface TodoRepository extends JpaRepository<Todo, Long> {
+public interface TodoRepository extends JpaRepository<Todo, Long>, TodoRepositoryCustom {
 
     @Query(value = "SELECT t FROM Todo t " +
             "LEFT JOIN FETCH t.user " +
@@ -30,19 +29,8 @@ public interface TodoRepository extends JpaRepository<Todo, Long> {
     );
 
     /**
-     *
-     * 수정: weather / modifiedAt 시작일 / modifiedAt 종료일을 optional 조건으로 검색하는 JPQL 추가
-     * 개념 정리:
-     * (:param IS NULL OR field = :param)
-     * 이 패턴은 "값이 없으면 전체 허용, 값이 있으면 그 조건으로 검색" 이라는 뜻
+     * 수정: TodoRepository가 TodoRepositoryCustom을 상속하도록 변경
+     * 개념 정리: searchTodos는 기존 JPQL을 그대로 사용하고,
+     * findByIdWithUser는 TodoRepositoryImpl에서 QueryDSL로 처리함
      */
-
-    @Query("SELECT t FROM Todo t " +
-            "LEFT JOIN FETCH t.user " +
-            "WHERE t.id = :todoId")
-    Optional<Todo> findByIdWithUser(@Param("todoId") Long todoId);
 }
-    /**
-    * 수정: 단건 조회에서도 user 를 함께 조회하도록 fetch join 유지
-    * 개념 정리: 연관 엔티티를 함께 조회하면 LAZY 로딩 때문에 추가 쿼리가 나가는 것을 줄일 수 있음
-    */
