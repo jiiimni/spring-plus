@@ -17,9 +17,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true) // 클래스 전체는 기본적으로 조회 전용으로 둬서 조회 성능 최적화 의도를 유지
+@Transactional(readOnly = true) // 클래스 전체는 기본적으로 조회 전용
 public class TodoService {
 
     private final TodoRepository todoRepository;
@@ -27,11 +29,9 @@ public class TodoService {
 
     /**
      *
-     * 수정: 저장 메서드는 DB에 insert가 발생하므로 readOnly가 아닌 일반 트랜잭션이 필요
-     * 개념 정리: readOnly=true 는 조회 전용 작업에 적합하고, save/update/delete 같은 쓰기 작업에는 사용하면 안 됨
-     *
+     * 개념 정리: readOnly=true 는 조회용, save/update/delete 는 쓰기용 트랜잭션이 필요
      */
-    @Transactional
+    @Transactional // 저장은 쓰기 작업이므로 일반 트랜잭션 필요
     public TodoSaveResponse saveTodo(AuthUser authUser, TodoSaveRequest todoSaveRequest) {
         User user = User.fromAuthUser(authUser);
 
@@ -54,10 +54,20 @@ public class TodoService {
         );
     }
 
-    public Page<TodoResponse> getTodos(int page, int size) {
+    public Page<TodoResponse> getTodos(
+            int page,
+            int size,
+            String weather,
+            LocalDateTime modifiedAtFrom,
+            LocalDateTime modifiedAtTo
+    ) {
         Pageable pageable = PageRequest.of(page - 1, size);
 
-        Page<Todo> todos = todoRepository.findAllByOrderByModifiedAtDesc(pageable);
+        /**
+         * 수정: 기존 전체 조회 대신 optional 조건(weather, 기간)을 반영하는 검색 메서드 호출
+         * 개념 정리: 조건값이 null 이면 해당 조건은 검색에서 제외되고, 값이 있으면 필터로 동작함
+         */
+        Page<Todo> todos = todoRepository.searchTodos(weather, modifiedAtFrom, modifiedAtTo, pageable);
 
         return todos.map(todo -> new TodoResponse(
                 todo.getId(),
