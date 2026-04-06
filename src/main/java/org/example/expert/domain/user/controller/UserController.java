@@ -1,11 +1,11 @@
 package org.example.expert.domain.user.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.expert.domain.common.annotation.Auth;
 import org.example.expert.domain.common.dto.AuthUser;
 import org.example.expert.domain.user.dto.request.UserChangePasswordRequest;
 import org.example.expert.domain.user.dto.response.UserResponse;
 import org.example.expert.domain.user.service.UserService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +21,11 @@ public class UserController {
     }
 
     @PutMapping("/users")
-    public void changePassword(@Auth AuthUser authUser, @RequestBody UserChangePasswordRequest userChangePasswordRequest) {
+    public void changePassword(
+            @AuthenticationPrincipal AuthUser authUser,
+            @RequestBody UserChangePasswordRequest userChangePasswordRequest
+    ) {
         userService.changePassword(authUser.getId(), userChangePasswordRequest);
     }
+    // 수정: 비밀번호 변경 시 현재 로그인 사용자 정보를 Spring Security principal에서 가져오도록 변경
 }

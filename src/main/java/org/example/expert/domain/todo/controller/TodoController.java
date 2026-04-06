@@ -2,7 +2,6 @@ package org.example.expert.domain.todo.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.expert.domain.common.annotation.Auth;
 import org.example.expert.domain.common.dto.AuthUser;
 import org.example.expert.domain.todo.dto.request.TodoSaveRequest;
 import org.example.expert.domain.todo.dto.response.TodoResponse;
@@ -11,6 +10,7 @@ import org.example.expert.domain.todo.service.TodoService;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -23,11 +23,12 @@ public class TodoController {
 
     @PostMapping("/todos")
     public ResponseEntity<TodoSaveResponse> saveTodo(
-            @Auth AuthUser authUser,
+            @AuthenticationPrincipal AuthUser authUser,
             @Valid @RequestBody TodoSaveRequest todoSaveRequest
     ) {
         return ResponseEntity.ok(todoService.saveTodo(authUser, todoSaveRequest));
     }
+    // 수정: 기존 @Auth 제거, Spring Security principal 사용으로 변경
 
     @GetMapping("/todos")
     public ResponseEntity<Page<TodoResponse>> getTodos(
@@ -41,10 +42,6 @@ public class TodoController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
             LocalDateTime modifiedAtTo
     ) {
-        /**
-         * 수정: 검색 조건(weather, modifiedAt 시작/끝)을 쿼리 파라미터로 받을 수 있게 변경
-         * 개념 정리: required = false 로 두면 사용자가 값을 안 보내도 에러 없이 null 로 받을 수 있음
-         */
         return ResponseEntity.ok(todoService.getTodos(page, size, weather, modifiedAtFrom, modifiedAtTo));
     }
 

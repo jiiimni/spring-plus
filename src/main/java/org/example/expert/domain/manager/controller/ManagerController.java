@@ -2,13 +2,13 @@ package org.example.expert.domain.manager.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.expert.domain.common.annotation.Auth;
 import org.example.expert.domain.common.dto.AuthUser;
 import org.example.expert.domain.manager.dto.request.ManagerSaveRequest;
 import org.example.expert.domain.manager.dto.response.ManagerResponse;
 import org.example.expert.domain.manager.dto.response.ManagerSaveResponse;
 import org.example.expert.domain.manager.service.ManagerService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,12 +21,13 @@ public class ManagerController {
 
     @PostMapping("/todos/{todoId}/managers")
     public ResponseEntity<ManagerSaveResponse> saveManager(
-            @Auth AuthUser authUser,
+            @AuthenticationPrincipal AuthUser authUser,
             @PathVariable long todoId,
             @Valid @RequestBody ManagerSaveRequest managerSaveRequest
     ) {
         return ResponseEntity.ok(managerService.saveManager(authUser, todoId, managerSaveRequest));
     }
+    // 수정: 관리자 등록 요청 시 인증 사용자 주입 방식을 Spring Security로 변경
 
     @GetMapping("/todos/{todoId}/managers")
     public ResponseEntity<List<ManagerResponse>> getMembers(@PathVariable long todoId) {
@@ -35,10 +36,11 @@ public class ManagerController {
 
     @DeleteMapping("/todos/{todoId}/managers/{managerId}")
     public void deleteManager(
-            @Auth AuthUser authUser,
+            @AuthenticationPrincipal AuthUser authUser,
             @PathVariable long todoId,
             @PathVariable long managerId
     ) {
         managerService.deleteManager(authUser, todoId, managerId);
     }
+    // 수정: 삭제 요청도 동일하게 @AuthenticationPrincipal 사용
 }
