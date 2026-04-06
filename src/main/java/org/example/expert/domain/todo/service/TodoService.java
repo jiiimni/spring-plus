@@ -19,12 +19,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional(readOnly = true) // 클래스 전체는 기본적으로 조회 전용으로 둬서 조회 성능 최적화 의도를 유지
 public class TodoService {
 
     private final TodoRepository todoRepository;
     private final WeatherClient weatherClient;
 
+    /**
+     *
+     * 수정: 저장 메서드는 DB에 insert가 발생하므로 readOnly가 아닌 일반 트랜잭션이 필요
+     * 개념 정리: readOnly=true 는 조회 전용 작업에 적합하고, save/update/delete 같은 쓰기 작업에는 사용하면 안 됨
+     *
+     */
+    @Transactional
     public TodoSaveResponse saveTodo(AuthUser authUser, TodoSaveRequest todoSaveRequest) {
         User user = User.fromAuthUser(authUser);
 
