@@ -35,9 +35,14 @@ class TodoControllerTest {
         // given
         long todoId = 1L;
         String title = "title";
-        AuthUser authUser = new AuthUser(1L, "email", UserRole.USER);
+
+        AuthUser authUser = new AuthUser(1L, "email", "nickname", UserRole.USER);
+        // 수정: AuthUser에 nickname 필드가 추가되어 생성자 인자도 함께 맞춰줌
+        // 개념 정리: 테스트 코드도 실제 애플리케이션 코드 구조와 같아야 컴파일/실행이 정상 동작함
+
         User user = User.fromAuthUser(authUser);
         UserResponse userResponse = new UserResponse(user.getId(), user.getEmail());
+
         TodoResponse response = new TodoResponse(
                 todoId,
                 title,
@@ -69,9 +74,14 @@ class TodoControllerTest {
 
         // then
         mockMvc.perform(get("/todos/{todoId}", todoId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(HttpStatus.OK.name()))
-                .andExpect(jsonPath("$.code").value(HttpStatus.OK.value()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.name()))
+                .andExpect(jsonPath("$.code").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.message").value("Todo not found"));
     }
 }
+
+/**
+ * 수정: 예외 발생 테스트이므로 200 OK가 아니라 400 Bad Request를 기대하도록 변경
+ * 개념 정리: 컨트롤러 테스트에서는 "예외가 발생했을 때 글로벌 예외처리기가 어떤 HTTP 응답을 만드는지"를 검증해야 함
+ */
