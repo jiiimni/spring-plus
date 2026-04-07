@@ -9,8 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 
-public interface TodoRepository extends JpaRepository<Todo, Long>, TodoRepositoryCustom {
-
+public interface TodoRepository extends JpaRepository<Todo, Long>, TodoRepositoryCustom, TodoQueryRepositoryCustom {
     @Query(value = "SELECT t FROM Todo t " +
             "LEFT JOIN FETCH t.user " +
             "WHERE (:weather IS NULL OR t.weather = :weather) " +
